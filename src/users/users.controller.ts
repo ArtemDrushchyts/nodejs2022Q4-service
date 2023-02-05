@@ -16,6 +16,7 @@ import {
   Post,
   Put,
   ValidationPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
 
@@ -45,7 +46,7 @@ export class UsersController {
     if (user) {
       return user;
     } else {
-      throw new Error(ErrorMessage.NON_EXIST_USER);
+      throw new NotFoundException(ErrorMessage.NON_EXIST_USER);
     }
   }
 
@@ -56,8 +57,9 @@ export class UsersController {
     data: CreateUserDto,
   ): Promise<User> {
     const user = await this.usersService.create(data);
-    console.log(data, user);
-    return user;
+    const userWithoutPass = { ...user };
+    delete userWithoutPass.password;
+    return userWithoutPass;
   }
 
   @Put(':id')
@@ -71,18 +73,25 @@ export class UsersController {
       }),
     )
     id: string,
-    @Body() data: UpdateUserDto,
+    @Body(new ValidationPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }))
+    data: UpdateUserDto,
   ) {
-    try {
-      const updateUserData = await this.usersService.update(id, data);
-      if (updateUserData) {
-        return updateUserData;
-      } else {
-        throw new NotFoundException(ErrorMessage.NON_EXIST_USER);
-      }
-    } catch (err) {
-      throw new ForbiddenException(err.message);
+    if (!data.newPassword || !data.oldPassword) {
+      throw new BadRequestException(ErrorMessage.WRONG_BODY);
     }
+    const user = await this.usersService.getOne(id);
+    if (!user) {
+      throw new NotFoundException(ErrorMessage.NON_EXIST_USER);
+    }
+    const updateUserData = await this.usersService.update(id, data);
+    if (updateUserData) {
+      const userWithoutPass = { ...updateUserData };
+      delete userWithoutPass.password;
+      return userWithoutPass;
+    } else {
+      throw new NotFoundException(ErrorMessage.NON_EXIST_USER);
+    }
+
   }
 
   @Delete(':id')

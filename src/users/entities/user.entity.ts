@@ -1,6 +1,6 @@
 export class User {
-  id: string;
-  login: string;
+  readonly id: string;
+  readonly login: string;
   password: string;
   version: number;
   createdAt: number;

@@ -37,7 +37,10 @@ export class UsersService {
     if (!user) {
       return null;
     }
-    if (data.newPassword !== data.oldPassword) {
+    if (data.newPassword === data.oldPassword) {
+      throw new Error(ErrorMessage.PASSWORD_MATCHES);
+    }
+    if (data.oldPassword !== user.password) {
       throw new Error(ErrorMessage.PASSWORD_WRONG);
     }
     user.version += 1;
