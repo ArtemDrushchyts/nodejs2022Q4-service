@@ -5,4 +5,5 @@ export const enum ErrorMessage {
   PASSWORD_MATCHES = 'Old and new passwords are the same',
   NON_EXIST_ARTIST = 'Artist does not exist',
   NON_EXIST_ALBUM = 'Album does not exist',
+  NON_EXIST_TRACK = 'Track does not exist',
 }
